@@ -1,5 +1,5 @@
 {
-  "_comment": "Master switch for OneMekong Hydropower cron syncs. Set any 'enabled' to false to pause that sync without deleting the cron. Set 'all_enabled' to false to pause everything. Edit and commit this file to the lao-hydropower-data repo \u2014 each cron reads it at runtime.",
+  "_comment": "Master switch for OneMekong Hydropower cron syncs. Set any 'enabled' to false to pause that sync without deleting the cron. Set 'all_enabled' to false to pause everything. Edit and commit this file to the lao-hydropower-data repo — each cron reads it at runtime.",
   "all_enabled": true,
   "syncs": {
     "pdc": {
@@ -11,13 +11,13 @@
       "description": "Open-Meteo rainfall grid + GloFAS per-dam discharge. Every 6 hours."
     },
     "mrc": {
-      "enabled": true,
-      "description": "MRC water-level station readings. Hourly."
+      "enabled": false,
+      "description": "MRC water-level station readings. Hourly. PAUSED 2026-06-03 by user request."
     },
     "cascade": {
       "enabled": true,
       "description": "Lao MEM dam safety daily report. Daily at 4 PM Bangkok. (Cron 0f858deb)"
     }
   },
-  "last_updated": "2026-06-02"
+  "last_updated": "2026-06-03"
 }
