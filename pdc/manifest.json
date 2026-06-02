@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-06-02T08:05:23.015814+00:00",
+  "timestamp": "20260602_0805",
+  "layers": {
+    "flood_watersheds": {
+      "count": 59,
+      "file": "latest_flood_watersheds.geojson",
+      "severity_breakdown": {
+        "WARNING": 16,
+        "ADVISORY": 23,
+        "WATCH": 20,
+        "INFO": 0,
+        "UNKNOWN": 0
+      }
+    },
+    "storms": {
+      "count": 66,
+      "file": "latest_storms.geojson",
+      "sub_layers": [
+        "storm_positions",
+        "storm_segments",
+        "wind_radii",
+        "forecast_3day",
+        "forecast_5day"
+      ]
+    },
+    "earthquakes": {
+      "count": 0,
+      "file": "latest_earthquakes.geojson"
+    },
+    "wildfires": {
+      "error": "Layer 5 query error: {'code': 400, 'message': 'Invalid or missing input parameters.', 'details': []}"
+    }
+  }
+}
