@@ -1,7 +1,32 @@
 {
-  "generated_at": "2026-06-02T08:05:23.015814+00:00",
-  "timestamp": "20260602_0805",
+  "generated_at": "2026-06-02T09:13:43.125128+00:00",
+  "timestamp": "20260602_0913",
   "layers": {
+    "hazard_points": {
+      "count": 130,
+      "file": "latest_hazard_points.geojson",
+      "type_breakdown": {
+        "HIGHWIND": 19,
+        "FLOOD": 20,
+        "ACCIDENT": 1,
+        "BIOMEDICAL": 1,
+        "SEVEREWEATHER": 28,
+        "WEAPONS": 1,
+        "VOLCANO": 5,
+        "STORM": 50,
+        "EARTHQUAKE": 2,
+        "EXTREMETEMPERATURE": 1,
+        "CYCLONE": 1,
+        "LANDSLIDE": 1
+      },
+      "severity_breakdown": {
+        "WARNING": 19,
+        "ADVISORY": 64,
+        "WATCH": 27,
+        "INFORMATION": 20,
+        "OTHER": 0
+      }
+    },
     "flood_watersheds": {
       "count": 59,
       "file": "latest_flood_watersheds.geojson",
