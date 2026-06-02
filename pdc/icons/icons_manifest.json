@@ -1,0 +1,282 @@
+{
+  "hazard_types": {
+    "ACCIDENT": {
+      "file": "accident.png",
+      "size": [
+        27,
+        30
+      ],
+      "content_type": "image/png"
+    },
+    "ACTIVESHOOTER": {
+      "file": "activeshooter.png",
+      "size": [
+        29,
+        30
+      ],
+      "content_type": "image/png"
+    },
+    "AVALANCHE": {
+      "file": "avalanche.png",
+      "size": [
+        30,
+        20
+      ],
+      "content_type": "image/png"
+    },
+    "BIOMEDICAL": {
+      "file": "biomedical.png",
+      "size": [
+        30,
+        30
+      ],
+      "content_type": "image/png"
+    },
+    "CIVILUNREST": {
+      "file": "civilunrest.png",
+      "size": [
+        20,
+        32
+      ],
+      "content_type": "image/png"
+    },
+    "COMBAT": {
+      "file": "combat.png",
+      "size": [
+        27,
+        21
+      ],
+      "content_type": "image/png"
+    },
+    "CYBER": {
+      "file": "cyber.png",
+      "size": [
+        30,
+        27
+      ],
+      "content_type": "image/png"
+    },
+    "CYCLONE": {
+      "file": "cyclone.png",
+      "size": [
+        26,
+        30
+      ],
+      "content_type": "image/png"
+    },
+    "DROUGHT": {
+      "file": "drought.png",
+      "size": [
+        29,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "EARTHQUAKE": {
+      "file": "earthquake.png",
+      "size": [
+        32,
+        24
+      ],
+      "content_type": "image/png"
+    },
+    "EQUIPMENT": {
+      "file": "equipment.png",
+      "size": [
+        26,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "EXTREMETEMPERATURE": {
+      "file": "extremetemperature.png",
+      "size": [
+        14,
+        24
+      ],
+      "content_type": "image/png"
+    },
+    "FLOOD": {
+      "file": "flood.png",
+      "size": [
+        34,
+        25
+      ],
+      "content_type": "image/png"
+    },
+    "HIGHSURF": {
+      "file": "highsurf.png",
+      "size": [
+        35,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "HIGHWIND": {
+      "file": "highwind.png",
+      "size": [
+        28,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "INCIDENT": {
+      "file": "incident.png",
+      "size": [
+        27,
+        27
+      ],
+      "content_type": "image/png"
+    },
+    "LANDSLIDE": {
+      "file": "landslide.png",
+      "size": [
+        32,
+        21
+      ],
+      "content_type": "image/png"
+    },
+    "MANMADE": {
+      "file": "manmade.png",
+      "size": [
+        16,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "MARINE": {
+      "file": "marine.png",
+      "size": [
+        39,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "OCCURRENCE": {
+      "file": "occurrence.png",
+      "size": [
+        34,
+        27
+      ],
+      "content_type": "image/png"
+    },
+    "POLITICALCONFLICT": {
+      "file": "politicalconflict.png",
+      "size": [
+        27,
+        32
+      ],
+      "content_type": "image/png"
+    },
+    "SEVEREWEATHER": {
+      "file": "severeweather.png",
+      "size": [
+        24,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "STORM": {
+      "file": "storm.png",
+      "size": [
+        27,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "TERRORISM": {
+      "file": "terrorism.png",
+      "size": [
+        20,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "TORNADO": {
+      "file": "tornado.png",
+      "size": [
+        31,
+        33
+      ],
+      "content_type": "image/png"
+    },
+    "TSUNAMI": {
+      "file": "tsunami.png",
+      "size": [
+        34,
+        26
+      ],
+      "content_type": "image/png"
+    },
+    "UNIT": {
+      "file": "unit.png",
+      "size": [
+        28,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "VOLCANO": {
+      "file": "volcano.png",
+      "size": [
+        27,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "WEAPONS": {
+      "file": "weapons.png",
+      "size": [
+        15,
+        28
+      ],
+      "content_type": "image/png"
+    },
+    "WILDFIRE": {
+      "file": "wildfire.png",
+      "size": [
+        26,
+        31
+      ],
+      "content_type": "image/png"
+    },
+    "WINTERSTORM": {
+      "file": "winterstorm.png",
+      "size": [
+        28,
+        31
+      ],
+      "content_type": "image/png"
+    }
+  },
+  "severities": {
+    "WARNING": {
+      "file": "severity_warning.png",
+      "size": [
+        31,
+        31
+      ]
+    },
+    "WATCH": {
+      "file": "severity_watch.png",
+      "size": [
+        31,
+        31
+      ]
+    },
+    "ADVISORY": {
+      "file": "severity_advisory.png",
+      "size": [
+        31,
+        31
+      ]
+    },
+    "INFORMATION": {
+      "file": "severity_information.png",
+      "size": [
+        31,
+        31
+      ]
+    }
+  }
+}
