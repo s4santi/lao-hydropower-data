@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lao River & Reservoir: real time monitoring, forecasting and coordination platform</title>
+<meta name="description" content="Real-time cascade map, time-series charts, scenario simulation, and operator data submission for the Lao hydropower system." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+<link rel="stylesheet" href="../styles.css" />
+<link rel="stylesheet" href="flow.css" />
+</head>
+<body class="flow-page">
+
+<!-- ===================== Floating Command Bar ===================== -->
+<div class="cmd-bar" role="banner">
+  <div class="cmd-logos" title="Ministry of Energy &amp; Mines / Ministry of Agriculture &amp; Environment">
+    <img class="cmd-logo" src="img/moic.jpg" alt="MOIC" />
+    <img class="cmd-logo" src="img/mae.jpg" alt="MAE" />
+  </div>
+  <div class="cmd-title">
+    <div class="t1">Lao River &amp; Reservoir</div>
+    <div class="t2">Real-time monitoring · forecasting · coordination</div>
+  </div>
+  <div class="view-switcher" role="tablist" aria-label="Primary view">
+    <button id="viewMapBtn" class="on" role="tab" aria-selected="true" data-view="map">Map</button>
+    <button id="viewRoleBtn" role="tab" aria-selected="false" data-view="role">RoleMap</button>
+  </div>
+  <div class="live-clock" aria-live="polite">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="label">LIVE</span>
+    <span class="time" id="liveClock">—</span>
+  </div>
+  <a class="cmd-back" href="https://onemekong.org" title="Back to OneMekong">OneMekong ↗</a>
+</div>
+
+<!-- ===================== Event Ticker ===================== -->
+<div class="ticker" role="complementary" aria-label="Live readings">
+  <span class="ticker-label">● LIVE READINGS</span>
+  <div class="ticker-track" id="tickerTrack">
+    <span class="ticker-item"><span class="tk-name">LUANG PRABANG</span> <span class="tk-val">9.224 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">VIENTIANE</span> <span class="tk-val">5.81 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">NAM NGUM 1</span> <span class="tk-val">209.4 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">XAYABURI</span> <span class="tk-val">274.5 m</span></span>
+    <span class="ticker-item"><span class="tk-name">PAKSE</span> <span class="tk-val">8.92 m</span> <span class="tk-warn">●</span></span>
+    <span class="ticker-item"><span class="tk-name">NAM THEUN 2</span> <span class="tk-val">532.1 m</span></span>
+    <span class="ticker-item"><span class="tk-name">CASCADE GEN</span> <span class="tk-val">17.8 GW</span></span>
+    <span class="ticker-item"><span class="tk-name">DAMS</span> <span class="tk-val">101</span></span>
+    <span class="ticker-item"><span class="tk-name">MRC STATIONS</span> <span class="tk-val">79</span></span>
+    <span class="ticker-item"><span class="tk-name">CHIANG SAEN</span> <span class="tk-val">2.43 m</span></span>
+    <!-- duplicate set for seamless scroll -->
+    <span class="ticker-item"><span class="tk-name">LUANG PRABANG</span> <span class="tk-val">9.224 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">VIENTIANE</span> <span class="tk-val">5.81 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">NAM NGUM 1</span> <span class="tk-val">209.4 m</span> <span class="tk-up">▲</span></span>
+    <span class="ticker-item"><span class="tk-name">XAYABURI</span> <span class="tk-val">274.5 m</span></span>
+    <span class="ticker-item"><span class="tk-name">PAKSE</span> <span class="tk-val">8.92 m</span> <span class="tk-warn">●</span></span>
+    <span class="ticker-item"><span class="tk-name">NAM THEUN 2</span> <span class="tk-val">532.1 m</span></span>
+    <span class="ticker-item"><span class="tk-name">CASCADE GEN</span> <span class="tk-val">17.8 GW</span></span>
+    <span class="ticker-item"><span class="tk-name">DAMS</span> <span class="tk-val">101</span></span>
+    <span class="ticker-item"><span class="tk-name">MRC STATIONS</span> <span class="tk-val">79</span></span>
+    <span class="ticker-item"><span class="tk-name">CHIANG SAEN</span> <span class="tk-val">2.43 m</span></span>
+  </div>
+</div>
+
+<div class="flow-shell">
+
+<!-- ===================== MAP VIEW ===================== -->
+<div id="viewMap" class="view active" role="tabpanel" aria-labelledby="viewMapBtn">
+
+<!-- ===================== Summary bar ===================== -->
+<section class="summary-bar" id="summaryBar">
+  <div class="sb-cell">
+    <span class="sb-label">Cascade dams</span>
+    <strong id="sb-total">—</strong>
+    <span class="sb-sub" id="sb-total-sub">loading…</span>
+  </div>
+  <div class="sb-cell">
+    <span class="sb-label">Reporting today</span>
+    <strong id="sb-current">—</strong>
+    <span class="sb-sub">of <span id="sb-with-readings">—</span> with readings</span>
+  </div>
+  <div class="sb-cell">
+    <span class="sb-label">Installed capacity</span>
+    <strong id="sb-capacity">—</strong>
+    <span class="sb-sub">megawatts online</span>
+  </div>
+  <div class="sb-cell">
+    <span class="sb-label">Dataset</span>
+    <strong id="sb-generated">—</strong>
+    <span class="sb-sub"><a id="sb-sheet" href="#" target="_blank" rel="noopener">view clean sheet ↗</a></span>
+  </div>
+</section>
+
+<!-- ===================== Main layout ===================== -->
+<main id="dashboard" class="flow-main">
+
+  <!-- LEFT: dam list + filters -->
+  <aside class="flow-side">
+    <div class="side-head">
+      <h3>Cascade</h3>
+      <div class="side-filters">
+        <button class="chip chip-on" data-filter="all">All</button>
+        <button class="chip" data-filter="reporting">Reporting</button>
+        <button class="chip" data-filter="mainstream">Mainstream</button>
+      </div>
+    </div>
+    <input type="search" id="damSearch" placeholder="Search dam…" class="side-search" autocomplete="off" />
+    <div id="damList" class="dam-list"></div>
+  </aside>
+
+  <!-- CENTER: map + charts -->
+  <section class="flow-center">
+
+    <div class="map-wrap">
+      <div id="map"></div>
+
+      <!-- Phase 3: Layer toggle panel (floating glass card) -->
+      <div class="layer-panel" id="layerPanel" data-open="false">
+        <button type="button" class="layer-panel-toggle" id="layerPanelToggle" title="Toggle layers" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none"><path d="M8 1.5L1.5 5 8 8.5 14.5 5 8 1.5z M1.5 8L8 11.5 14.5 8 M1.5 11L8 14.5 14.5 11" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+          <span>Layers</span>
+        </button>
+        <div class="layer-panel-body">
+          <label class="layer-row"><input type="checkbox" data-layer="rivers" checked /><span>Rivers</span></label>
+          <label class="layer-row"><input type="checkbox" data-layer="dams" checked /><span>Dams</span></label>
+          <label class="layer-row"><input type="checkbox" data-layer="stations" checked /><span>MRC stations</span></label>
+          <label class="layer-row"><input type="checkbox" data-layer="ffgs" checked /><span>FFGS heatmap</span></label>
+          <label class="layer-row"><input type="checkbox" data-layer="provinces" /><span>Province boundaries</span></label>
+        </div>
+      </div>
+
+      <!-- Phase 3: Time scrubber (FFGS bulletin date/hour) -->
+      <div class="time-scrubber" id="timeScrubber">
+        <span class="ts-label">Bulletin</span>
+        <select id="scrubDate" class="ts-select"></select>
+        <select id="scrubHour" class="ts-select ts-hour"></select>
+        <button type="button" id="scrubLive" class="ts-live hidden" title="Jump to latest">Live</button>
+      </div>
+
+      <!-- Phase 3: Export menu -->
+      <div class="export-wrap">
+        <button type="button" id="exportBtn" class="export-btn" aria-haspopup="true" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none"><path d="M8 1.5v9 M4.5 7L8 10.5 11.5 7 M2.5 13.5h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Export</span>
+        </button>
+        <div class="export-menu hidden" id="exportMenu" role="menu">
+          <button type="button" id="exDams" role="menuitem">Dams (CSV)</button>
+          <button type="button" id="exFfgs" role="menuitem">FFGS districts (CSV)</button>
+          <button type="button" id="exGeo" role="menuitem">Visible FFGS (GeoJSON)</button>
+        </div>
+      </div>
+
+      <!-- Top map tools: search + basemap switcher -->
+      <div class="map-tools">
+        <div class="map-search">
+          <svg class="ms-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="search" id="mapSearch" placeholder="Search dam or station…" autocomplete="off" />
+          <div class="map-search-results" id="mapSearchResults" hidden></div>
+        </div>
+        <div class="basemap-pill" role="tablist" aria-label="Basemap">
+          <button data-basemap="street" title="Street">Street</button>
+          <button data-basemap="satellite" class="on" title="Satellite">Satellite</button>
+          <button data-basemap="terrain" title="Terrain">Terrain</button>
+        </div>
+      </div>
+
+      <div class="map-legend" id="mapLegend">
+        <div class="lg-header">
+          <strong id="lgTitle">Legend</strong>
+          <div class="lg-header-actions">
+            <button type="button" class="lg-reset" id="lgReset" title="Show all dams" hidden>Reset</button>
+            <button type="button" class="lg-toggle" id="lgToggle" aria-expanded="false" aria-controls="lgBody">Show</button>
+          </div>
+        </div>
+        <div class="lg-body" id="lgBody" hidden>
+        <strong>Active storage</strong>
+        <button type="button" class="lg-filter" data-status="low"           aria-pressed="true"><span class="lg-dot lg-storage-low"></span>Low (&lt;15%)</button>
+        <button type="button" class="lg-filter" data-status="rising"        aria-pressed="true"><span class="lg-dot lg-storage-rising"></span>Filling (15–40%)</button>
+        <button type="button" class="lg-filter" data-status="normal"        aria-pressed="true"><span class="lg-dot lg-storage-normal"></span>Normal (40–70%)</button>
+        <button type="button" class="lg-filter" data-status="watch"         aria-pressed="true"><span class="lg-dot lg-storage-watch"></span>Watch (70–85%)</button>
+        <button type="button" class="lg-filter" data-status="high"          aria-pressed="true"><span class="lg-dot lg-storage-high"></span>High (85–95%)</button>
+        <button type="button" class="lg-filter" data-status="critical_high" aria-pressed="true"><span class="lg-dot lg-storage-critical"></span>Critical high (≥95%)</button>
+        <button type="button" class="lg-filter" data-status="no_data"       aria-pressed="true"><span class="lg-dot lg-storage-none"></span>No data</button>
+        <strong style="margin-top:6px">Water-level stations (MRC)</strong>
+        <button type="button" class="lg-filter lg-mrc" data-station="normal" aria-pressed="true"><span class="lg-dot lg-mrc-normal"></span>Normal</button>
+        <button type="button" class="lg-filter lg-mrc" data-station="alarm"  aria-pressed="true"><span class="lg-dot lg-mrc-alarm"></span>Alarm</button>
+        <button type="button" class="lg-filter lg-mrc" data-station="flood"  aria-pressed="true"><span class="lg-dot lg-mrc-flood"></span>Flooded</button>
+        <button type="button" class="lg-filter lg-mrc" data-station="na"     aria-pressed="true"><span class="lg-dot lg-mrc-na"></span>N/A</button>
+        <button type="button" class="lg-filter lg-mrc" data-station="china"  aria-pressed="true"><span class="lg-dot lg-mrc-china"></span>China · hourly</button>
+        <strong style="margin-top:6px">River network</strong>
+        <span><span class="lg-line lg-mekong"></span>Mekong mainstream</span>
+        <span><span class="lg-line lg-tributary"></span>Tributaries</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="station-detail" id="stationDetail" style="display:none">
+      <div class="sd-top">
+        <div class="sd-left">
+          <div class="sd-eyebrow">
+            <span id="sd-code">—</span> · <span id="sd-country">—</span>
+            <span class="sd-status-pill" id="sd-status">—</span>
+          </div>
+          <h2 id="sd-name">Station</h2>
+          <div class="sd-sub" id="sd-sub">—</div>
+        </div>
+        <button class="sd-close" id="sdClose" title="Close station view">×</button>
+      </div>
+
+      <div class="sd-grid">
+        <div class="kpi"><span class="kpi-l">Water level</span><strong id="sd-level">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Alarm stage</span><strong id="sd-alarm">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Flood stage</span><strong id="sd-flood">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Headroom to alarm</span><strong id="sd-headroom">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Zero gauge (MSL)</span><strong id="sd-msl">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Low-lying flood alert</span><strong id="sd-lowlying">—</strong></div>
+      </div>
+
+      <div class="sd-rain">
+        <div class="sd-rain-label">Rainfall</div>
+        <div class="sd-rain-grid">
+          <div class="kpi small"><span class="kpi-l">Last 1 h</span><strong id="sd-rain-1h">—</strong></div>
+          <div class="kpi small"><span class="kpi-l">Last 6 h</span><strong id="sd-rain-6h">—</strong></div>
+          <div class="kpi small"><span class="kpi-l">Last 12 h</span><strong id="sd-rain-12h">—</strong></div>
+          <div class="kpi small"><span class="kpi-l">Last 24 h</span><strong id="sd-rain-24h">—</strong></div>
+          <div class="kpi small"><span class="kpi-l">7am – 7am</span><strong id="sd-rain-7to7">—</strong></div>
+        </div>
+      </div>
+
+      <div class="sd-chart-wrap" id="stationChartWrap">
+        <canvas id="stationChart"></canvas>
+      </div>
+      <div class="sd-footer">
+        <span class="sd-updated-line">Last update <span id="sd-updated">—</span></span>
+        <a id="sd-mrc-link" href="#" target="_blank" rel="noopener" class="sd-link">View on MRC portal →</a>
+      </div>
+    </div>
+
+    <div class="dam-header" id="damHeader">
+      <div class="dh-left">
+        <div class="dh-eyebrow"><span id="dh-code">—</span> · <span id="dh-river">—</span></div>
+        <h2 id="dh-name">Select a dam</h2>
+        <div class="dh-sub" id="dh-sub">Click any marker on the map or any row in the cascade list.</div>
+      </div>
+      <div class="dh-right">
+        <div class="kpi"><span class="kpi-l">Capacity</span><strong id="kpi-capacity">—</strong></div>
+        <div class="kpi"><span class="kpi-l">FSL</span><strong id="kpi-fsl">—</strong></div>
+        <div class="kpi"><span class="kpi-l">MOL</span><strong id="kpi-mol">—</strong></div>
+        <div class="kpi"><span class="kpi-l">Latest reading</span><strong id="kpi-latest">—</strong></div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-head">
+          <h4>Reservoir level</h4>
+          <span class="chart-meta" id="meta-level">meters above sea level</span>
+        </div>
+        <div class="chart-body"><canvas id="chart-level"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <h4>Inflow vs total release</h4>
+          <span class="chart-meta">m³/s</span>
+        </div>
+        <div class="chart-body"><canvas id="chart-flow"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <h4>Generation</h4>
+          <span class="chart-meta">MW</span>
+        </div>
+        <div class="chart-body"><canvas id="chart-gen"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">
+          <h4>Rainfall on dam site</h4>
+          <span class="chart-meta">mm/day</span>
+        </div>
+        <div class="chart-body"><canvas id="chart-rain"></canvas></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RIGHT: scenario panel + freshness panel -->
+  <aside class="flow-right">
+
+    <!-- Phase 3: Master filter bar -->
+    <div class="panel mf-panel" id="masterFilters">
+      <div class="mf-head">
+        <h3>Filters</h3>
+        <button type="button" class="mf-clear" id="mfClear" title="Clear all filters">Clear</button>
+      </div>
+      <p class="panel-lede">Cross-filter dams, stations, FFGS districts, and map markers.</p>
+      <div class="mf-row">
+        <label class="mf-label" for="mfProvince">Province</label>
+        <select id="mfProvince" class="mf-select"><option value="ALL">All provinces</option></select>
+      </div>
+      <div class="mf-row">
+        <label class="mf-label" for="mfBasin">River basin</label>
+        <select id="mfBasin" class="mf-select"><option value="ALL">All basins</option></select>
+      </div>
+      <div class="mf-row">
+        <label class="mf-label" for="mfHazard">Hazard level</label>
+        <select id="mfHazard" class="mf-select">
+          <option value="ALL">All levels</option>
+          <option value="Moderate">Moderate +</option>
+          <option value="High">High +</option>
+          <option value="Extreme">Extreme only</option>
+        </select>
+      </div>
+      <div class="mf-stats" id="mfStats"></div>
+    </div>
+
+    <div class="panel ffgs-panel" id="ffgsPanel">
+      <div class="ffgs-head">
+        <h3>Flash flood forecast</h3>
+        <button type="button" class="ffgs-refresh" id="ffgsRefresh" title="Refresh now">↻</button>
+      </div>
+      <div class="ffgs-meta">
+        <span class="ffgs-stamp" id="ffgsStamp">Loading…</span>
+        <span class="ffgs-source" title="MRC Mekong River Commission · Flash Flood Guidance System">MRC FFGS</span>
+      </div>
+
+      <label class="ffgs-toggle">
+        <input type="checkbox" id="ffgsToggle" checked />
+        <span>Show heatmap on map</span>
+      </label>
+
+      <div class="ffgs-section-label">Forecast horizon</div>
+      <div class="ffgs-horizon-row">
+        <button class="ffgs-horizon-btn" data-h="1h">1h</button>
+        <button class="ffgs-horizon-btn" data-h="3h">3h</button>
+        <button class="ffgs-horizon-btn" data-h="6h">6h</button>
+        <button class="ffgs-horizon-btn" data-h="12h">12h</button>
+        <button class="ffgs-horizon-btn on" data-h="24h">24h</button>
+      </div>
+
+      <div class="ffgs-summary" id="ffgsSummary"></div>
+
+      <div class="ffgs-country-row">
+        <button class="ffgs-country-tab on" data-iso="ALL">All</button>
+        <button class="ffgs-country-tab" data-iso="LAO">Lao</button>
+        <button class="ffgs-country-tab" data-iso="KHM">Cambodia</button>
+        <button class="ffgs-country-tab" data-iso="THA">Thailand</button>
+        <button class="ffgs-country-tab" data-iso="VNM">Vietnam</button>
+      </div>
+
+      <div class="ffgs-table-wrap">
+        <table class="ffgs-table">
+          <thead><tr><th>District</th><th>ISO</th><th>Level</th><th>Value</th></tr></thead>
+          <tbody id="ffgsTbody"><tr><td colspan="4" class="ffgs-empty">Loading bulletin…</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="ffgs-legend">
+        <span><i class="ffgs-sw ffgs-sw-mod"></i>Moderate</span>
+        <span><i class="ffgs-sw ffgs-sw-high"></i>High</span>
+        <span><i class="ffgs-sw ffgs-sw-ext"></i>Extreme</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Scenario simulation</h3>
+      <p class="panel-lede">Adjust drivers to project a 7-day outlook. Uses the selected dam's recent average as a baseline.</p>
+
+      <div class="slider-row">
+        <label>Rainfall <span id="lbl-rain">+0%</span></label>
+        <input type="range" id="sl-rain" min="-50" max="200" value="0" step="5" />
+      </div>
+      <div class="slider-row">
+        <label>Upstream release <span id="lbl-upstream">+0%</span></label>
+        <input type="range" id="sl-upstream" min="-50" max="100" value="0" step="5" />
+      </div>
+      <div class="slider-row">
+        <label>Turbine output <span id="lbl-turbine">+0%</span></label>
+        <input type="range" id="sl-turbine" min="-100" max="50" value="0" step="5" />
+      </div>
+
+      <div class="scenario-result" id="scenarioResult">
+        <div class="sr-row"><span>Projected inflow</span><strong id="sr-inflow">—</strong></div>
+        <div class="sr-row"><span>Projected release</span><strong id="sr-release">—</strong></div>
+        <div class="sr-row"><span>Net storage change / day</span><strong id="sr-storage">—</strong></div>
+        <div class="sr-row sr-flag"><span>Status</span><strong id="sr-flag">—</strong></div>
+      </div>
+
+      <button class="btn btn-ghost btn-sm" id="btnResetScenario">Reset</button>
+    </div>
+
+    <div class="panel">
+      <h3>Data freshness</h3>
+      <div class="fresh-grid" id="freshGrid"></div>
+      <p class="panel-foot">Source: <a id="freshLink" href="#" target="_blank" rel="noopener">clean Google Sheet</a></p>
+    </div>
+
+  </aside>
+</main>
+
+<!-- ===================== Submission ===================== -->
+<section id="submit" class="submit-section">
+  <div class="submit-grid">
+
+    <div class="panel">
+      <h3>Submit operator reading</h3>
+      <p class="panel-lede">Add a single observation. Writes to the clean dataset (not back to operator sheets).</p>
+      <form id="formObservation" class="form-stack">
+        <div class="form-row">
+          <label>Dam</label>
+          <select id="f-dam" required></select>
+        </div>
+        <div class="form-row form-row-2">
+          <div><label>Date</label><input type="date" id="f-date" required /></div>
+          <div><label>Water level (m)</label><input type="number" step="0.01" id="f-level" /></div>
+        </div>
+        <div class="form-row form-row-2">
+          <div><label>Inflow (m³/s)</label><input type="number" step="0.1" id="f-inflow" /></div>
+          <div><label>Total release (m³/s)</label><input type="number" step="0.1" id="f-release" /></div>
+        </div>
+        <div class="form-row form-row-2">
+          <div><label>Generation (MW)</label><input type="number" step="0.1" id="f-gen" /></div>
+          <div><label>Rainfall (mm)</label><input type="number" step="0.1" id="f-rain" /></div>
+        </div>
+        <div class="form-row">
+          <label>Notes</label>
+          <textarea id="f-notes" rows="2" placeholder="Optional context — gate operations, maintenance, etc."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-sm">Submit reading</button>
+          <span class="form-msg" id="formMsg"></span>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Bulk upload — CSV / Excel</h3>
+      <p class="panel-lede">Upload a CSV exported from a SCADA system or an Excel sheet from a control room. Columns are auto-mapped where possible.</p>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" hidden />
+        <div class="upload-cue">
+          <strong>Drop CSV / Excel here</strong>
+          <span>or <button type="button" class="link-btn" id="btnPick">choose a file</button></span>
+        </div>
+      </div>
+      <div class="upload-preview" id="uploadPreview" hidden>
+        <h4>Preview <span id="previewCount"></span></h4>
+        <div class="preview-table-wrap"><table id="previewTable"></table></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary btn-sm" id="btnIngest">Stage ingest</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="btnDiscard">Discard</button>
+          <span class="form-msg" id="uploadMsg"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- /#viewMap -->
+
+<!-- ===================== ROLEMAP VIEW (placeholder — Phase 5) ===================== -->
+<div id="viewRole" class="view" role="tabpanel" aria-labelledby="viewRoleBtn">
+  <div class="rolemap-placeholder">
+    <span class="ph-badge">COMING IN PHASE 5</span>
+    <h2>Flood Response RoleMap</h2>
+    <p>An interactive radial mind-map of every agency, role, and focal person responsible for flood response across the Lao basin — filtered by alert level, category, and province. The geography ↔ mind-map transition will animate from this dashboard's dam markers into the role tree.</p>
+    <svg class="ph-tree" viewBox="0 0 480 240" fill="none" aria-hidden="true">
+      <circle cx="240" cy="120" r="22" fill="#3b82f6" opacity="0.6"/>
+      <circle cx="240" cy="120" r="36" stroke="#3b82f6" stroke-width="1" opacity="0.3"/>
+      <circle cx="240" cy="120" r="60" stroke="#3b82f6" stroke-width="1" opacity="0.18"/>
+      <g stroke="#60a5fa" stroke-width="1" opacity="0.5">
+        <line x1="240" y1="120" x2="100" y2="50"/>
+        <line x1="240" y1="120" x2="380" y2="50"/>
+        <line x1="240" y1="120" x2="60"  y2="180"/>
+        <line x1="240" y1="120" x2="240" y2="220"/>
+        <line x1="240" y1="120" x2="420" y2="180"/>
+      </g>
+      <g fill="#60a5fa">
+        <circle cx="100" cy="50"  r="8"/>
+        <circle cx="380" cy="50"  r="8"/>
+        <circle cx="60"  cy="180" r="8"/>
+        <circle cx="240" cy="220" r="8"/>
+        <circle cx="420" cy="180" r="8"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+</div><!-- /.flow-shell -->
+
+<!-- ===================== Floating tab pills ===================== -->
+<div class="tab-pills" role="tablist" aria-label="View tabs">
+  <button id="tabMapBtn" class="on" data-view="map">
+    <svg class="pill-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4l4-2 4 2 4-2v10l-4 2-4-2-4 2V4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 2v10M10 4v10" stroke="currentColor" stroke-width="1.5"/></svg>
+    Map
+  </button>
+  <button id="tabRoleBtn" data-view="role">
+    <svg class="pill-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" fill="currentColor"/><circle cx="2" cy="3" r="1.5" fill="currentColor"/><circle cx="14" cy="3" r="1.5" fill="currentColor"/><circle cx="2" cy="13" r="1.5" fill="currentColor"/><circle cx="14" cy="13" r="1.5" fill="currentColor"/><path d="M3 4l4 3M13 4L9 7M3 12l4-3M13 12L9 9" stroke="currentColor" stroke-width="1.2"/></svg>
+    RoleMap
+  </button>
+</div>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <div><strong>Lao River &amp; Reservoir</strong> · Real-time monitoring, forecasting &amp; coordination · OneMekong</div>
+    <div class="foot-links">
+      <a href="../">Hub</a>
+      <a href="https://onemekong.org">onemekong.org</a>
+      <a id="footSheet" href="#" target="_blank" rel="noopener">Clean sheet ↗</a>
+    </div>
+    <div class="foot-meta" id="footMeta">v2.0 · Glass shell · Phase 1</div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="flow.js"></script>
+<script src="phase36.js"></script>
+<script src="mrc_popup.js"></script>
+<script src="hydropower_popup.js"></script>
+<script>
+/* ===== Phase 1 shell: live clock + view switching ===== */
+(function(){
+  // Live clock — Asia/Bangkok
+  function pad(n){return String(n).padStart(2,'0');}
+  function tickClock(){
+    var now = new Date();
+    // Format in Bangkok time (UTC+7)
+    var bkk = new Date(now.getTime() + (now.getTimezoneOffset() + 420) * 60000);
+    var t = pad(bkk.getHours()) + ':' + pad(bkk.getMinutes()) + ':' + pad(bkk.getSeconds()) + ' ICT';
+    var el = document.getElementById('liveClock');
+    if (el) el.textContent = t;
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // View switching (command bar + bottom tab pills are synced)
+  function setView(v){
+    var map = document.getElementById('viewMap');
+    var role = document.getElementById('viewRole');
+    if (!map || !role) return;
+    if (v === 'role') {
+      map.classList.remove('active');
+      role.classList.add('active');
+    } else {
+      role.classList.remove('active');
+      map.classList.add('active');
+    }
+    // sync button states
+    document.querySelectorAll('[data-view]').forEach(function(b){
+      var on = b.getAttribute('data-view') === v;
+      b.classList.toggle('on', on);
+      if (b.getAttribute('role') === 'tab') b.setAttribute('aria-selected', on ? 'true':'false');
+    });
+    // Resize the map when returning to map view (Maplibre needs it)
+    if (v === 'map' && window.dispatchEvent) {
+      setTimeout(function(){ window.dispatchEvent(new Event('resize')); }, 60);
+    }
+  }
+  document.querySelectorAll('[data-view]').forEach(function(b){
+    b.addEventListener('click', function(){ setView(b.getAttribute('data-view')); });
+  });
+})();
+</script>
+</body>
+</html>
